@@ -1,0 +1,68 @@
+import { GalleryImage } from '@/types';
+
+export const galleryData: GalleryImage[] = [
+  {
+    id: 'gal-1',
+    title: 'State-of-the-Art Science & Innovation Complex',
+    category: 'Campus',
+    imageUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-06-15',
+    description: 'Our modern academic wing featuring smart classrooms, robotics labs, and interactive lecture halls.',
+  },
+  {
+    id: 'gal-2',
+    title: 'Annual Robotics Championship Finals',
+    category: 'Science & Tech',
+    imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-07-28',
+    description: 'Students demonstrating autonomous AI-driven robots during the regional STEM competition.',
+  },
+  {
+    id: 'gal-3',
+    title: 'Olympic Swimming & Aquatics Complex',
+    category: 'Sports',
+    imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-05-10',
+    description: 'Climate-controlled 50-meter Olympic pool used for daily training and regional meets.',
+  },
+  {
+    id: 'gal-4',
+    title: 'Symphony Orchestra Performance',
+    category: 'Arts & Culture',
+    imageUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-04-22',
+    description: 'Apex Academy Youth Orchestra conducting the annual spring classical musical gala.',
+  },
+  {
+    id: 'gal-5',
+    title: 'Central Library & Knowledge Hub',
+    category: 'Campus',
+    imageUrl: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-03-12',
+    description: 'Over 40,000 physical volumes, digital archives, and quiet study pods for student researchers.',
+  },
+  {
+    id: 'gal-6',
+    title: 'Varsity Basketball Championship Match',
+    category: 'Sports',
+    imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-03-01',
+    description: 'Apex Falcons basketball team playing in front of a packed stadium audience.',
+  },
+  {
+    id: 'gal-7',
+    title: 'Visual Fine Arts Exhibition',
+    category: 'Arts & Culture',
+    imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-02-18',
+    description: 'Student oil paintings, sculptures, and digital graphic design projects on display.',
+  },
+  {
+    id: 'gal-8',
+    title: 'Graduation Ceremony Class of 2026',
+    category: 'Events',
+    imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+    date: '2026-06-01',
+    description: 'Celebrating the achievements and college placement of our graduating senior batch.',
+  },
+];
