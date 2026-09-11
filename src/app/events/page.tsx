@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
-import { eventsData } from '@/data/events';
+import { EventItem } from '@/types';
+import { fetchEvents } from '@/lib/api';
+import { mapEvent } from '@/lib/adapters';
 import { EventCard } from '@/components/events/EventCard';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Tabs } from '@/components/ui/Tabs';
@@ -10,16 +12,25 @@ import { Tabs } from '@/components/ui/Tabs';
 export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [allEvents, setAllEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEvents()
+      .then((raw) => setAllEvents(raw.map(mapEvent)))
+      .catch(() => setAllEvents([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const categories = ['All', 'Academic', 'Cultural', 'Sports', 'Workshop', 'Parent-Teacher'];
 
   const tabOptions = categories.map((cat) => ({
     id: cat,
     label: cat,
-    count: cat === 'All' ? eventsData.length : eventsData.filter((e) => e.category === cat).length,
+    count: cat === 'All' ? allEvents.length : allEvents.filter((e) => e.category === cat).length,
   }));
 
-  const filtered = eventsData.filter((evt) => {
+  const filtered = allEvents.filter((evt) => {
     const matchesCategory = activeCategory === 'All' || evt.category === activeCategory;
     const matchesSearch =
       evt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,11 +58,15 @@ export default function EventsPage() {
           <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search event title or venue..." />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((evt) => (
-            <EventCard key={evt.id} event={evt} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-20 text-slate-500 font-medium">Loading events...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filtered.map((evt) => (
+              <EventCard key={evt.id} event={evt} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

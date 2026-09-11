@@ -1,9 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
-import { GraduationCap, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ArrowRight } from 'lucide-react';
-import { schoolInfoData } from '@/data/schoolInfo';
+import { GraduationCap, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ArrowRight, Shield } from 'lucide-react';
+import { fetchSettings } from '@/lib/api';
+import { mapSchoolInfo } from '@/lib/adapters';
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC = async () => {
+  let schoolInfo: any;
+  let footerText = '';
+  try {
+    const { schoolInformation, websiteSettings } = await fetchSettings();
+    schoolInfo = mapSchoolInfo(schoolInformation, websiteSettings);
+    footerText = websiteSettings?.footerText || '';
+  } catch {
+    schoolInfo = { name: 'Apex Academy International', tagline: 'Inspiring Excellence, Nurturing Character, Empowering Tomorrow', established: 1994, accreditation: 'CBSE & International Baccalaureate (IB) Candidate School', address: '100 Academy Heights Parkway, Education Valley, CA 90210', phone: '+1 (555) 234-5678', email: 'info@apexacademy.edu' } as any;
+  }
   return (
     <footer className="bg-navy-950 text-slate-300 pt-16 pb-8 border-t border-navy-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -15,14 +25,14 @@ export const Footer: React.FC = () => {
                 <GraduationCap className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-extrabold text-lg text-white tracking-tight">APEX ACADEMY</h3>
+                <h3 className="font-extrabold text-lg text-white tracking-tight">{schoolInfo.name?.toUpperCase() || 'APEX ACADEMY'}</h3>
                 <p className="text-[11px] text-gold-400 font-semibold tracking-widest uppercase">
                   International School
                 </p>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              {schoolInfoData.tagline}. Established in {schoolInfoData.established}, accredited by {schoolInfoData.accreditation}.
+              {footerText || schoolInfo.tagline}. Established in {schoolInfo.established}, accredited by {schoolInfo.accreditation}.
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a
@@ -114,6 +124,11 @@ export const Footer: React.FC = () => {
                   <ArrowRight className="w-3 h-3 text-gold-500" /> Forms & Prospectus
                 </Link>
               </li>
+              <li>
+                <Link href="/announcements" className="hover:text-gold-400 transition flex items-center gap-1.5">
+                  <ArrowRight className="w-3 h-3 text-gold-500" /> Notices & Announcements
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -125,15 +140,15 @@ export const Footer: React.FC = () => {
             <div className="space-y-3 text-xs text-slate-400">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
-                <span>{schoolInfoData.address}</span>
+                <span>{schoolInfo.address}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-gold-500 shrink-0" />
-                <span>{schoolInfoData.phone}</span>
+                <span>{schoolInfo.phone}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-gold-500 shrink-0" />
-                <span>{schoolInfoData.email}</span>
+                <span>{schoolInfo.email}</span>
               </div>
             </div>
           </div>
@@ -141,11 +156,14 @@ export const Footer: React.FC = () => {
 
         {/* Footer Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} {schoolInfoData.name}. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {schoolInfo.name}. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-slate-400 transition">Privacy Policy</a>
             <a href="#" className="hover:text-slate-400 transition">Terms of Service</a>
             <a href="#" className="hover:text-slate-400 transition">Sitemap</a>
+            <Link href="/admin" className="hover:text-gold-400 transition flex items-center gap-1">
+              <Shield className="w-3 h-3" /> Admin
+            </Link>
           </div>
         </div>
       </div>

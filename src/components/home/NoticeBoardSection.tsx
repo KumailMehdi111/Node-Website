@@ -1,12 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { Bell, ArrowRight } from 'lucide-react';
-import { announcementsData } from '@/data/announcements';
+import { fetchAnnouncements } from '@/lib/api';
+import { mapAnnouncement } from '@/lib/adapters';
 import { AnnouncementCard } from '@/components/announcements/AnnouncementCard';
 import { Button } from '@/components/ui/Button';
 
-export const NoticeBoardSection: React.FC = () => {
-  const featuredAnnouncements = announcementsData.slice(0, 3);
+export const NoticeBoardSection: React.FC = async () => {
+  let featuredAnnouncements: any[] = [];
+  try {
+    const raw = await fetchAnnouncements();
+    featuredAnnouncements = raw.slice(0, 3).map(mapAnnouncement);
+  } catch {
+    featuredAnnouncements = [];
+  }
 
   return (
     <section className="py-20 bg-white">

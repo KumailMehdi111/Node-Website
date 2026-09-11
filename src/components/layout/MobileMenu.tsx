@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, GraduationCap, ChevronRight } from 'lucide-react';
+import { X, GraduationCap, ChevronRight, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileMenuProps {
@@ -72,6 +72,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, navLink
             className="w-full py-2.5 text-center bg-gold-600 hover:bg-gold-500 text-white font-bold text-sm rounded-lg shadow-md transition"
           >
             Apply for Admission
+          </Link>
+          <Link
+            href="/admin"
+            onClick={onClose}
+            className="w-full py-2.5 text-center bg-navy-800 hover:bg-navy-700 text-slate-200 font-bold text-sm rounded-lg transition flex items-center justify-center gap-2"
+          >
+            <Shield className="w-4 h-4" />
+            Admin Panel
           </Link>
           <p className="text-[11px] text-center text-slate-400">
             Established 1994 • Accredited Institution

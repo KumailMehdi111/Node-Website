@@ -3,17 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Calendar, ArrowLeft, Bell, Share2 } from 'lucide-react';
-import { announcementsData } from '@/data/announcements';
+import { fetchAnnouncementBySlug } from '@/lib/api';
+import { mapAnnouncement } from '@/lib/adapters';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatDate } from '@/lib/utils';
 
-export async function generateStaticParams() {
-  return announcementsData.map((a) => ({ slug: a.slug }));
-}
-
-export default function AnnouncementDetailPage({ params }: { params: { slug: string } }) {
-  const item = announcementsData.find((a) => a.slug === params.slug);
+export default async function AnnouncementDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  let item: any;
+  try {
+    const raw = await fetchAnnouncementBySlug(slug);
+    item = mapAnnouncement(raw);
+  } catch {
+    notFound();
+  }
 
   if (!item) notFound();
 

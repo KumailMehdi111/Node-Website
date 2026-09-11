@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { GraduationCap, Menu, Search } from 'lucide-react';
+import { GraduationCap, Menu, Search, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileMenu } from './MobileMenu';
 import { Button } from '@/components/ui/Button';
@@ -22,7 +22,7 @@ export const navLinks = [
   { href: '/events', label: 'Events' },
 ];
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ schoolName?: string }> = ({ schoolName = 'APEX ACADEMY' }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -50,7 +50,7 @@ export const Header: React.FC = () => {
           </div>
           <div>
             <span className="font-extrabold text-lg text-navy-900 tracking-tight block leading-tight group-hover:text-gold-600 transition">
-              APEX ACADEMY
+              {schoolName}
             </span>
             <span className="text-[10px] font-bold text-slate-500 tracking-widest block uppercase">
               International School
@@ -60,7 +60,7 @@ export const Header: React.FC = () => {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
-          {navLinks.slice(0, 9).map((link) => {
+          {navLinks.slice(0, 11).map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
@@ -81,6 +81,13 @@ export const Header: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/admin"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-navy-700 hover:bg-slate-100 transition"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            Admin
+          </Link>
           <Link href="/admissions" className="hidden sm:block">
             <Button variant="accent" size="sm" className="font-bold">
               Apply Now

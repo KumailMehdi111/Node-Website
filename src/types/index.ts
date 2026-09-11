@@ -7,16 +7,22 @@ export interface SchoolInfo {
   emergencyPhone: string;
   email: string;
   address: string;
+  timings: string;
   principalName: string;
   principalTitle: string;
   principalMessage: string;
   principalPhoto: string;
+  aboutText: string;
+  vision: string;
+  mission: string;
+  heroImageUrl: string;
+  heroCampusHighlight: string;
   stats: {
-    students: number;
-    teachers: number;
+    students: string;
+    teachers: string;
     passRate: string;
-    campusAcres: number;
-    clubsCount: number;
+    campusAcres: string;
+    clubsCount: string;
   };
 }
 

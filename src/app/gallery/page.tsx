@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera } from 'lucide-react';
-import { galleryData } from '@/data/gallery';
+import { fetchGallery } from '@/lib/api';
+import { mapGalleryImage } from '@/lib/adapters';
 import { GalleryImage } from '@/types';
 import { GalleryCard } from '@/components/gallery/GalleryCard';
 import { LightboxModal } from '@/components/gallery/LightboxModal';
@@ -11,16 +12,32 @@ import { Tabs } from '@/components/ui/Tabs';
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [activeImage, setActiveImage] = useState<GalleryImage | null>(null);
+  const [allImages, setAllImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const raw = await fetchGallery();
+        setAllImages(raw.map(mapGalleryImage));
+      } catch {
+        setAllImages([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const categories = ['All', 'Campus', 'Sports', 'Science & Tech', 'Arts & Culture', 'Events'];
 
   const tabOptions = categories.map((cat) => ({
     id: cat,
     label: cat,
-    count: cat === 'All' ? galleryData.length : galleryData.filter((img) => img.category === cat).length,
+    count: cat === 'All' ? allImages.length : allImages.filter((img) => img.category === cat).length,
   }));
 
-  const filteredImages = galleryData.filter(
+  const filteredImages = allImages.filter(
     (img) => activeCategory === 'All' || img.category === activeCategory
   );
 
@@ -44,11 +61,18 @@ export default function GalleryPage() {
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredImages.map((img) => (
-            <GalleryCard key={img.id} image={img} onOpenLightbox={setActiveImage} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
+            <div className="w-8 h-8 border-4 border-gold-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-slate-500 text-sm">Loading gallery images...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredImages.map((img) => (
+              <GalleryCard key={img.id} image={img} onOpenLightbox={setActiveImage} />
+            ))}
+          </div>
+        )}
 
         {/* Lightbox Modal */}
         <LightboxModal image={activeImage} onClose={() => setActiveImage(null)} />

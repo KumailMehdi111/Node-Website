@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, FileText } from 'lucide-react';
-import { downloadsData } from '@/data/downloads';
+import { fetchDownloads } from '@/lib/api';
+import { mapDownload } from '@/lib/adapters';
+import { DownloadResource } from '@/types';
 import { DownloadTable } from '@/components/downloads/DownloadTable';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Tabs } from '@/components/ui/Tabs';
@@ -10,16 +12,32 @@ import { Tabs } from '@/components/ui/Tabs';
 export default function DownloadsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [allDownloads, setAllDownloads] = useState<DownloadResource[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const raw = await fetchDownloads();
+        setAllDownloads(raw.map(mapDownload));
+      } catch {
+        setAllDownloads([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const categories = ['All', 'Admissions', 'Syllabus', 'Forms', 'Exam Schedules', 'Newsletters'];
 
   const tabOptions = categories.map((cat) => ({
     id: cat,
     label: cat,
-    count: cat === 'All' ? downloadsData.length : downloadsData.filter((d) => d.category === cat).length,
+    count: cat === 'All' ? allDownloads.length : allDownloads.filter((d) => d.category === cat).length,
   }));
 
-  const filteredDownloads = downloadsData.filter((doc) => {
+  const filteredDownloads = allDownloads.filter((doc) => {
     const matchesCategory = activeCategory === 'All' || doc.category === activeCategory;
     const matchesSearch =
       doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,7 +66,14 @@ export default function DownloadsPage() {
         </div>
 
         {/* Table Component */}
-        <DownloadTable resources={filteredDownloads} />
+        {loading ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
+            <div className="w-8 h-8 border-4 border-gold-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-slate-500 text-sm">Loading downloads...</p>
+          </div>
+        ) : (
+          <DownloadTable resources={filteredDownloads} />
+        )}
       </div>
     </div>
   );

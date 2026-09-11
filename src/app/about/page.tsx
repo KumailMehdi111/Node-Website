@@ -2,7 +2,8 @@ import React from 'react';
 import Image from 'next/image';
 import { Metadata } from 'next';
 import { Award, Compass, ShieldCheck, HeartHandshake, BookOpen, Users } from 'lucide-react';
-import { schoolInfoData } from '@/data/schoolInfo';
+import { fetchSettings } from '@/lib/api';
+import { mapSchoolInfo } from '@/lib/adapters';
 import { Card } from '@/components/ui/Card';
 
 export const metadata: Metadata = {
@@ -10,7 +11,14 @@ export const metadata: Metadata = {
   description: 'Discover the rich history, core educational philosophy, leadership, and world-class campus of Apex Academy International.',
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  let schoolInfo: any;
+  try {
+    const settings = await fetchSettings();
+    schoolInfo = mapSchoolInfo(settings.schoolInformation, settings.websiteSettings);
+  } catch {
+    schoolInfo = mapSchoolInfo(null, null);
+  }
   const values = [
     {
       icon: Compass,
@@ -41,13 +49,13 @@ export default function AboutPage() {
         <div className="bg-navy-950 text-white rounded-3xl p-10 lg:p-16 relative overflow-hidden shadow-2xl">
           <div className="max-w-3xl space-y-4 relative z-10">
             <span className="text-xs font-bold text-gold-400 uppercase tracking-widest bg-navy-800 px-3 py-1 rounded-full">
-              Established {schoolInfoData.established}
+              Established {schoolInfo.established}
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
               Legacy of Educational Distinction
             </h1>
             <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
-              For over three decades, Apex Academy International has remained at the vanguard of transformative education, preparing students for leadership in world-class universities and global careers.
+              {schoolInfo.aboutText || 'For over three decades, Apex Academy International has remained at the vanguard of transformative education, preparing students for leadership in world-class universities and global careers.'}
             </p>
           </div>
         </div>
@@ -57,14 +65,14 @@ export default function AboutPage() {
           <Card className="p-8 space-y-4 bg-white border-l-4 border-l-navy-900">
             <h3 className="text-2xl font-extrabold text-navy-900">Our Vision</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              To be a globally recognized benchmark in school education where innovation, character formation, and human empathy converge to nurture leaders of tomorrow.
+              {schoolInfo.vision || 'To be a globally recognized benchmark in school education where innovation, character formation, and human empathy converge to nurture leaders of tomorrow.'}
             </p>
           </Card>
 
           <Card className="p-8 space-y-4 bg-white border-l-4 border-l-gold-500">
             <h3 className="text-2xl font-extrabold text-navy-900">Our Mission</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              To provide a safe, intellectually stimulating environment through world-class curricula, state-of-the-art laboratories, and comprehensive mentorship that empowers every learner.
+              {schoolInfo.mission || 'To provide a safe, intellectually stimulating environment through world-class curricula, state-of-the-art laboratories, and comprehensive mentorship that empowers every learner.'}
             </p>
           </Card>
         </div>

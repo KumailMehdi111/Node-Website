@@ -1,17 +1,23 @@
-import React from 'react';
-import Image from 'next/image';
-import { Metadata } from 'next';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Calendar, UserCheck } from 'lucide-react';
-import { activitiesData } from '@/data/activities';
+import { fetchActivities } from '@/lib/api';
+import { mapActivity } from '@/lib/adapters';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 
-export const metadata: Metadata = {
-  title: 'Activities & Clubs | Apex Academy International',
-  description: 'Explore extra-curricular clubs, robotics, Model UN, music ensembles, and environmental societies at Apex Academy.',
-};
-
 export default function ActivitiesPage() {
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchActivities()
+      .then((raw) => setActivities(raw.map(mapActivity)))
+      .catch((err) => { console.error('Activities load error:', err); setActivities([]); })
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="bg-slate-50 min-h-screen py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
@@ -26,38 +32,47 @@ export default function ActivitiesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {activitiesData.map((act) => (
-            <Card key={act.id} className="flex flex-col sm:flex-row overflow-hidden bg-white group">
-              <div className="relative h-56 sm:h-auto sm:w-5/12 overflow-hidden bg-slate-100 shrink-0">
-                <Image
-                  src={act.image}
-                  alt={act.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="p-6 sm:w-7/12 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <Badge variant="gold">{act.category}</Badge>
-                  <h3 className="font-bold text-lg text-navy-900">{act.name}</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">{act.description}</p>
+        {loading ? (
+          <div className="text-center py-20 text-slate-500 font-medium">Loading activities...</div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-20 text-slate-400">No activities found.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {activities.map((act) => (
+              <Card key={act.id} className="flex flex-col sm:flex-row overflow-hidden bg-white group">
+                <div className="relative h-56 sm:h-auto sm:w-5/12 overflow-hidden bg-slate-100 shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={act.image}
+                    alt={act.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80';
+                    }}
+                  />
                 </div>
+                <div className="p-6 sm:w-7/12 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <Badge variant="gold">{act.category}</Badge>
+                    <h3 className="font-bold text-lg text-navy-900">{act.name}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">{act.description}</p>
+                  </div>
 
-                <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs text-slate-500">
-                  <div className="flex items-center gap-1.5 font-medium text-navy-900">
-                    <UserCheck className="w-3.5 h-3.5 text-gold-600" />
-                    <span>Faculty Mentor: {act.mentor}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{act.meetingSchedule}</span>
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs text-slate-500">
+                    <div className="flex items-center gap-1.5 font-medium text-navy-900">
+                      <UserCheck className="w-3.5 h-3.5 text-gold-600" />
+                      <span>Faculty Mentor: {act.mentor}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{act.meetingSchedule}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

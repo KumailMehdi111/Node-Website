@@ -2,10 +2,18 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Quote, CheckCircle2 } from 'lucide-react';
-import { schoolInfoData } from '@/data/schoolInfo';
+import { fetchSettings } from '@/lib/api';
+import { mapSchoolInfo } from '@/lib/adapters';
 import { Button } from '@/components/ui/Button';
 
-export const WelcomeSection: React.FC = () => {
+export const WelcomeSection: React.FC = async () => {
+  let schoolInfo: any;
+  try {
+    const { schoolInformation, websiteSettings } = await fetchSettings();
+    schoolInfo = mapSchoolInfo(schoolInformation, websiteSettings);
+  } catch {
+    schoolInfo = { principalPhoto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80', principalName: 'Dr. Eleanor Vance', principalTitle: 'Principal & Academic Director (Ph.D. Education, Oxford)', principalMessage: 'At Apex Academy, we believe that education is not merely the accumulation of knowledge, but the awakening of creative passion, critical inquiry, and compassionate leadership.' } as any;
+  }
   return (
     <section className="py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -14,16 +22,16 @@ export const WelcomeSection: React.FC = () => {
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-white">
               <Image
-                src={schoolInfoData.principalPhoto}
-                alt={schoolInfoData.principalName}
+                src={schoolInfo.principalPhoto}
+                alt={schoolInfo.principalName}
                 width={600}
                 height={750}
                 className="w-full h-[460px] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-white">
-                <h4 className="text-lg font-bold">{schoolInfoData.principalName}</h4>
-                <p className="text-xs text-gold-400 font-medium">{schoolInfoData.principalTitle}</p>
+                <h4 className="text-lg font-bold">{schoolInfo.principalName}</h4>
+                <p className="text-xs text-gold-400 font-medium">{schoolInfo.principalTitle}</p>
               </div>
             </div>
           </div>
@@ -36,15 +44,15 @@ export const WelcomeSection: React.FC = () => {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
-              Welcome to Apex Academy International
+              Welcome to {schoolInfo.name || 'Apex Academy International'}
             </h2>
 
             <p className="text-slate-600 text-base leading-relaxed italic border-l-4 border-gold-500 pl-4 bg-white py-3 rounded-r-lg shadow-sm">
-              "{schoolInfoData.principalMessage}"
+              "{schoolInfo.principalMessage}"
             </p>
 
             <p className="text-slate-600 text-sm leading-relaxed">
-              We empower learners to think critically, communicate articulately, and lead compassionately in a rapidly changing world. Our holistic framework harmonizes academic rigor with artistic creativity and athletic wellness.
+              {schoolInfo.aboutText || 'We empower learners to think critically, communicate articulately, and lead compassionately in a rapidly changing world. Our holistic framework harmonizes academic rigor with artistic creativity and athletic wellness.'}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">

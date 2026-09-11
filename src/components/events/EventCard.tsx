@@ -1,6 +1,7 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
 import { EventItem } from '@/types';
 import { Card } from '@/components/ui/Card';
@@ -15,11 +16,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   return (
     <Card className="flex flex-col h-full group">
       <div className="relative h-48 w-full overflow-hidden bg-slate-100">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={event.image}
           alt={event.title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80';
+          }}
         />
         <div className="absolute top-3 left-3 bg-navy-900/90 backdrop-blur-md text-white px-3 py-1 rounded-lg text-center shadow-md">
           <span className="block text-xs font-bold text-gold-400 uppercase">

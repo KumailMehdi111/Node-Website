@@ -6,7 +6,15 @@ import Image from 'next/image';
 import { ArrowRight, Award, ShieldCheck, Sparkles, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-export const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  heroImageUrl?: string;
+  heroCampusHighlight?: string;
+}
+
+export const HeroSection: React.FC<HeroSectionProps> = ({
+  heroImageUrl = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80',
+  heroCampusHighlight = '45-Acre Smart Academic & Athletic Campus',
+}) => {
   return (
     <section className="relative bg-navy-950 text-white py-20 lg:py-28 overflow-hidden">
       {/* Decorative background glows */}
@@ -68,7 +76,7 @@ export const HeroSection: React.FC = () => {
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-navy-800 bg-navy-900 group">
               <Image
-                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80"
+                src={heroImageUrl}
                 alt="Apex Academy Campus & Students"
                 width={800}
                 height={600}
@@ -78,7 +86,7 @@ export const HeroSection: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/20 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-navy-900/90 backdrop-blur-md border border-navy-700 text-white">
                 <p className="text-xs font-bold text-gold-400 uppercase tracking-widest">Campus Highlight</p>
-                <p className="text-sm font-semibold text-white">45-Acre Smart Academic & Athletic Campus</p>
+                <p className="text-sm font-semibold text-white">{heroCampusHighlight}</p>
               </div>
             </div>
           </div>

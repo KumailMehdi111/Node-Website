@@ -3,16 +3,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Mail, GraduationCap, ArrowLeft, Clock, Award } from 'lucide-react';
-import { staffData } from '@/data/staff';
+import { fetchStaffBySlug } from '@/lib/api';
+import { mapStaff } from '@/lib/adapters';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
-export async function generateStaticParams() {
-  return staffData.map((s) => ({ slug: s.slug }));
-}
-
-export default function StaffDetailPage({ params }: { params: { slug: string } }) {
-  const staff = staffData.find((s) => s.slug === params.slug);
+export default async function StaffDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  let staff: any;
+  try {
+    const raw = await fetchStaffBySlug(slug);
+    staff = mapStaff(raw);
+  } catch {
+    notFound();
+  }
 
   if (!staff) notFound();
 

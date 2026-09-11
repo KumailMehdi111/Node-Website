@@ -1,12 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, ArrowRight } from 'lucide-react';
-import { eventsData } from '@/data/events';
+import { fetchEvents } from '@/lib/api';
+import { mapEvent } from '@/lib/adapters';
 import { EventCard } from '@/components/events/EventCard';
 import { Button } from '@/components/ui/Button';
 
-export const UpcomingEventsSection: React.FC = () => {
-  const featuredEvents = eventsData.slice(0, 3);
+export const UpcomingEventsSection: React.FC = async () => {
+  let featuredEvents: any[] = [];
+  try {
+    const raw = await fetchEvents();
+    featuredEvents = raw.slice(0, 3).map(mapEvent);
+  } catch {
+    featuredEvents = [];
+  }
 
   return (
     <section className="py-20 bg-slate-50 border-t border-slate-200/60">

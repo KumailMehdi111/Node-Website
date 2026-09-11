@@ -1,0 +1,40 @@
+node_modules
+dist
+
+# Keep environment variables out of version control
+.env
+
+# Database
+*.db
+*.db-journal
+
+# Generated Prisma
+/src/generated/prisma
+
+# Uploads (user-generated content)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+# Next.js
+.next/
+
+# Environment files
+.env.*
+!.env.example
+
+# TypeScript generated files
+*.tsbuildinfo
+
+# AI editor/tool files
+.agents/
+.claude/
+.windsurf/
+# TypeScript build info
+*.tsbuildinfo

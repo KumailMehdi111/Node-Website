@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, MessageSquare } from 'lucide-react';
-import { schoolInfoData } from '@/data/schoolInfo';
+import { fetchSettings, submitContactForm } from '@/lib/api';
+import { mapSchoolInfo } from '@/lib/adapters';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -10,6 +11,10 @@ import { Select } from '@/components/ui/Select';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [schoolInfo, setSchoolInfo] = useState<import('@/types').SchoolInfo | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,10 +24,39 @@ export default function ContactPage() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function loadSchoolInfo() {
+      try {
+        const settings = await fetchSettings();
+        setSchoolInfo(mapSchoolInfo(settings.schoolInformation, settings.websiteSettings));
+      } catch {
+        setSchoolInfo(mapSchoolInfo(null, null));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSchoolInfo();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await submitContactForm({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        subject: formData.subject || formData.department,
+        message: formData.message,
+      });
+      setSubmitted(true);
+    } catch {
+      setError('Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,42 +74,54 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Info Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="p-6 text-center space-y-3 bg-white">
-            <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
-              <Phone className="w-6 h-6 text-gold-600" />
-            </div>
-            <h4 className="font-bold text-base text-navy-900">Phone & Helpline</h4>
-            <p className="text-xs text-slate-500">{schoolInfoData.phone}</p>
-            <p className="text-[11px] text-rose-600 font-bold">Emergency: {schoolInfoData.emergencyPhone}</p>
-          </Card>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="p-6 text-center space-y-3 bg-white animate-pulse">
+                <div className="w-12 h-12 rounded-2xl bg-slate-200 mx-auto" />
+                <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto" />
+                <div className="h-3 bg-slate-200 rounded w-1/2 mx-auto" />
+              </Card>
+            ))}
+          </div>
+        ) : schoolInfo && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="p-6 text-center space-y-3 bg-white">
+              <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
+                <Phone className="w-6 h-6 text-gold-600" />
+              </div>
+              <h4 className="font-bold text-base text-navy-900">Phone & Helpline</h4>
+              <p className="text-xs text-slate-500">{schoolInfo.phone}</p>
+              <p className="text-[11px] text-rose-600 font-bold">Emergency: {schoolInfo.emergencyPhone}</p>
+            </Card>
 
-          <Card className="p-6 text-center space-y-3 bg-white">
-            <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
-              <Mail className="w-6 h-6 text-gold-600" />
-            </div>
-            <h4 className="font-bold text-base text-navy-900">Email Address</h4>
-            <p className="text-xs text-slate-500">{schoolInfoData.email}</p>
-            <p className="text-[11px] text-slate-400">Admissions & General Desk</p>
-          </Card>
+            <Card className="p-6 text-center space-y-3 bg-white">
+              <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
+                <Mail className="w-6 h-6 text-gold-600" />
+              </div>
+              <h4 className="font-bold text-base text-navy-900">Email Address</h4>
+              <p className="text-xs text-slate-500">{schoolInfo.email}</p>
+              <p className="text-[11px] text-slate-400">Admissions & General Desk</p>
+            </Card>
 
-          <Card className="p-6 text-center space-y-3 bg-white">
-            <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
-              <MapPin className="w-6 h-6 text-gold-600" />
-            </div>
-            <h4 className="font-bold text-base text-navy-900">Campus Location</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">{schoolInfoData.address}</p>
-          </Card>
+            <Card className="p-6 text-center space-y-3 bg-white">
+              <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
+                <MapPin className="w-6 h-6 text-gold-600" />
+              </div>
+              <h4 className="font-bold text-base text-navy-900">Campus Location</h4>
+              <p className="text-xs text-slate-500 leading-relaxed">{schoolInfo.address}</p>
+            </Card>
 
-          <Card className="p-6 text-center space-y-3 bg-white">
-            <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
-              <Clock className="w-6 h-6 text-gold-600" />
-            </div>
-            <h4 className="font-bold text-base text-navy-900">Visiting Hours</h4>
-            <p className="text-xs text-slate-500">Mon - Fri: 8:00 AM - 4:00 PM</p>
-            <p className="text-xs text-slate-500">Sat: 8:30 AM - 1:00 PM</p>
-          </Card>
-        </div>
+            <Card className="p-6 text-center space-y-3 bg-white">
+              <div className="w-12 h-12 rounded-2xl bg-navy-50 text-navy-900 flex items-center justify-center mx-auto">
+                <Clock className="w-6 h-6 text-gold-600" />
+              </div>
+              <h4 className="font-bold text-base text-navy-900">Visiting Hours</h4>
+              <p className="text-xs text-slate-500">Mon - Fri: 8:00 AM - 4:00 PM</p>
+              <p className="text-xs text-slate-500">Sat: 8:30 AM - 1:00 PM</p>
+            </Card>
+          </div>
+        )}
 
         {/* Form & Map Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -85,6 +131,12 @@ export default function ContactPage() {
               <h2 className="text-2xl font-extrabold text-navy-900">Send an Official Inquiry</h2>
               <p className="text-slate-500 text-xs mt-1">Please select the destination department for faster routing.</p>
             </div>
+
+            {error && (
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-center">
+                <p className="text-xs text-rose-700 font-medium">{error}</p>
+              </div>
+            )}
 
             {submitted ? (
               <div className="p-8 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-3">
@@ -151,9 +203,9 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   />
                 </div>
-                <Button variant="primary" type="submit" className="w-full font-bold flex items-center justify-center gap-2">
+                <Button variant="primary" type="submit" className="w-full font-bold flex items-center justify-center gap-2" disabled={isSubmitting}>
                   <Send className="w-4 h-4" />
-                  <span>Send Message</span>
+                  <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
                 </Button>
               </form>
             )}
@@ -166,8 +218,8 @@ export default function ContactPage() {
               <div className="relative h-80 rounded-xl overflow-hidden bg-slate-200 flex items-center justify-center border border-slate-300">
                 <div className="text-center p-6 space-y-2">
                   <MapPin className="w-10 h-10 text-gold-600 mx-auto animate-bounce" />
-                  <p className="font-bold text-navy-900 text-sm">{schoolInfoData.name}</p>
-                  <p className="text-xs text-slate-500">{schoolInfoData.address}</p>
+                  <p className="font-bold text-navy-900 text-sm">{schoolInfo?.name ?? 'Apex Academy International'}</p>
+                  <p className="text-xs text-slate-500">{schoolInfo?.address ?? ''}</p>
                 </div>
               </div>
             </Card>

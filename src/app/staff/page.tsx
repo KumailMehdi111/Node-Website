@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
-import { staffData } from '@/data/staff';
+import { fetchStaff } from '@/lib/api';
+import { mapStaff } from '@/lib/adapters';
+import { StaffMember } from '@/types';
 import { StaffCard } from '@/components/staff/StaffCard';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Tabs } from '@/components/ui/Tabs';
@@ -10,16 +12,32 @@ import { Tabs } from '@/components/ui/Tabs';
 export default function StaffDirectoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('All');
+  const [allStaff, setAllStaff] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const raw = await fetchStaff();
+        setAllStaff(raw.map(mapStaff));
+      } catch {
+        setAllStaff([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const departments = ['All', 'Leadership', 'Sciences', 'Mathematics', 'Humanities', 'Sports', 'Arts & Music'];
 
   const tabOptions = departments.map((dept) => ({
     id: dept,
     label: dept,
-    count: dept === 'All' ? staffData.length : staffData.filter((s) => s.department === dept).length,
+    count: dept === 'All' ? allStaff.length : allStaff.filter((s) => s.department === dept).length,
   }));
 
-  const filteredStaff = staffData.filter((staff) => {
+  const filteredStaff = allStaff.filter((staff) => {
     const matchesDept = selectedDept === 'All' || staff.department === selectedDept;
     const matchesSearch =
       staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,7 +67,12 @@ export default function StaffDirectoryPage() {
         </div>
 
         {/* Staff Grid */}
-        {filteredStaff.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
+            <div className="w-8 h-8 border-4 border-gold-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-slate-500 text-sm">Loading staff members...</p>
+          </div>
+        ) : filteredStaff.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
             <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <h3 className="font-bold text-navy-900 text-lg">No staff members found</h3>

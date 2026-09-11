@@ -3,17 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Calendar, Clock, MapPin, ArrowLeft, Share2 } from 'lucide-react';
-import { eventsData } from '@/data/events';
+import { fetchEventBySlug } from '@/lib/api';
+import { mapEvent } from '@/lib/adapters';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatDate } from '@/lib/utils';
 
-export async function generateStaticParams() {
-  return eventsData.map((e) => ({ slug: e.slug }));
-}
-
-export default function EventDetailPage({ params }: { params: { slug: string } }) {
-  const event = eventsData.find((e) => e.slug === params.slug);
+export default async function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  let event: any;
+  try {
+    const raw = await fetchEventBySlug(slug);
+    event = mapEvent(raw);
+  } catch {
+    notFound();
+  }
 
   if (!event) notFound();
 

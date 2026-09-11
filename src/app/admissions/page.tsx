@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, FileText, Calendar, CreditCard, Send, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Accordion } from '@/components/ui/Accordion';
+import { submitInquiry } from '@/lib/api';
 
 export default function AdmissionsPage() {
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     parentName: '',
     email: '',
@@ -19,10 +22,28 @@ export default function AdmissionsPage() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [fees, setFees] = useState<{className: string; admissionFee: number; monthlyFee: number; annualFee: number; otherCharges: number | null; effectiveYear: string}[]>([]);
+
+  useEffect(() => {
+    fetch('/api/v1/public/admissions')
+      .then(r => r.json())
+      .then(json => { if (json.data?.feeStructure) setFees(json.data.feeStructure); })
+      .catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.parentName || !formData.email || !formData.phone) return;
-    setFormSubmitted(true);
+    if (!formData.parentName || !formData.email || !formData.studentName) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await submitInquiry(formData);
+      setFormSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit inquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const steps = [
@@ -99,8 +120,8 @@ export default function AdmissionsPage() {
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-extrabold text-navy-900">Annual Fee Structure (2026–27)</h2>
-              <p className="text-slate-500 text-xs mt-1">Transparent fee breakdown with quarterly payment option.</p>
+              <h2 className="text-2xl font-extrabold text-navy-900">Fee Structure</h2>
+              <p className="text-slate-500 text-xs mt-1">Transparent fee breakdown by class level.</p>
             </div>
             <CreditCard className="w-8 h-8 text-gold-600 hidden sm:block" />
           </div>
@@ -109,31 +130,23 @@ export default function AdmissionsPage() {
             <table className="w-full text-left text-sm border-collapse min-w-[500px]">
               <thead>
                 <tr className="bg-navy-900 text-white text-xs uppercase font-bold">
-                  <th className="py-3 px-4">Grade Level</th>
-                  <th className="py-3 px-4">Admission Fee (One-Time)</th>
-                  <th className="py-3 px-4">Tuition Fee (Quarterly)</th>
-                  <th className="py-3 px-4">Lab & Tech Fee (Annual)</th>
+                  <th className="py-3 px-4">Class</th>
+                  <th className="py-3 px-4">Admission Fee</th>
+                  <th className="py-3 px-4">Monthly Fee</th>
+                  <th className="py-3 px-4">Annual Fee</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                <tr className="hover:bg-slate-50">
-                  <td className="py-3 px-4 font-semibold text-navy-900">Primary (Grades 1-5)</td>
-                  <td className="py-3 px-4 text-slate-600">$500</td>
-                  <td className="py-3 px-4 text-slate-600">$1,200</td>
-                  <td className="py-3 px-4 text-slate-600">$300</td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="py-3 px-4 font-semibold text-navy-900">Middle School (Grades 6-8)</td>
-                  <td className="py-3 px-4 text-slate-600">$600</td>
-                  <td className="py-3 px-4 text-slate-600">$1,450</td>
-                  <td className="py-3 px-4 text-slate-600">$400</td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="py-3 px-4 font-semibold text-navy-900">Senior High (Grades 9-12)</td>
-                  <td className="py-3 px-4 text-slate-600">$750</td>
-                  <td className="py-3 px-4 text-slate-600">$1,800</td>
-                  <td className="py-3 px-4 text-slate-600">$550</td>
-                </tr>
+                {fees.length > 0 ? fees.map((fee) => (
+                  <tr key={fee.className} className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-semibold text-navy-900">{fee.className}</td>
+                    <td className="py-3 px-4 text-slate-600">Rs. {fee.admissionFee.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-slate-600">Rs. {fee.monthlyFee.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-slate-600">Rs. {fee.annualFee.toLocaleString()}</td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={4} className="py-6 text-center text-slate-400 italic">No fee structures available. Contact admissions for details.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -178,7 +191,6 @@ export default function AdmissionsPage() {
                   <Input
                     label="Phone Number"
                     type="tel"
-                    required
                     placeholder="+1 (555) 000-0000"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -187,6 +199,7 @@ export default function AdmissionsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Student Full Name"
+                    required
                     placeholder="e.g. Alex Doe"
                     value={formData.studentName}
                     onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
@@ -203,9 +216,16 @@ export default function AdmissionsPage() {
                     onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
                   />
                 </div>
-                <Button variant="accent" type="submit" className="w-full font-bold flex items-center justify-center gap-2">
-                  <Send className="w-4 h-4" />
-                  <span>Submit Admission Inquiry</span>
+                {error && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+                )}
+                <Button variant="accent" type="submit" disabled={submitting} className="w-full font-bold flex items-center justify-center gap-2">
+                  {submitting ? (
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  <span>{submitting ? 'Submitting...' : 'Submit Admission Inquiry'}</span>
                 </Button>
               </form>
             )}

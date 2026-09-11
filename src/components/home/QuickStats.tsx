@@ -1,31 +1,40 @@
 import React from 'react';
 import { Users, GraduationCap, Trophy, MapPin, Sparkles } from 'lucide-react';
-import { schoolInfoData } from '@/data/schoolInfo';
+import { fetchSettings } from '@/lib/api';
+import { mapSchoolInfo } from '@/lib/adapters';
 
-export const QuickStats: React.FC = () => {
+export const QuickStats: React.FC = async () => {
+  let schoolInfo: any;
+  try {
+    const { schoolInformation, websiteSettings } = await fetchSettings();
+    schoolInfo = mapSchoolInfo(schoolInformation, websiteSettings);
+  } catch {
+    schoolInfo = { stats: { students: '1850', teachers: '140', passRate: '99.4%', campusAcres: '45 Acres', clubsCount: '32' } } as any;
+  }
+
   const stats = [
     {
       icon: Users,
       label: 'Enrolled Students',
-      value: `${schoolInfoData.stats.students}+`,
+      value: `${schoolInfo.stats.students}+`,
       desc: 'Across Primary to High School',
     },
     {
       icon: GraduationCap,
       label: 'Faculty & Mentors',
-      value: `${schoolInfoData.stats.teachers}+`,
+      value: `${schoolInfo.stats.teachers}+`,
       desc: 'Expert & Certified Educators',
     },
     {
       icon: Trophy,
       label: 'Academic Success',
-      value: schoolInfoData.stats.passRate,
+      value: schoolInfo.stats.passRate,
       desc: 'Board Exam Distinction Rate',
     },
     {
       icon: MapPin,
       label: 'Campus Area',
-      value: `${schoolInfoData.stats.campusAcres} Acres`,
+      value: schoolInfo.stats.campusAcres,
       desc: 'World-Class Infrastructure',
     },
   ];

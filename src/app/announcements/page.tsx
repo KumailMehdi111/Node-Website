@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
-import { announcementsData } from '@/data/announcements';
+import { Announcement } from '@/types';
+import { fetchAnnouncements } from '@/lib/api';
+import { mapAnnouncement } from '@/lib/adapters';
 import { AnnouncementCard } from '@/components/announcements/AnnouncementCard';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Tabs } from '@/components/ui/Tabs';
@@ -10,16 +12,25 @@ import { Tabs } from '@/components/ui/Tabs';
 export default function AnnouncementsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [allAnnouncements, setAllAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAnnouncements()
+      .then((raw) => setAllAnnouncements(raw.map(mapAnnouncement)))
+      .catch(() => setAllAnnouncements([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const categories = ['All', 'Academic', 'Admission', 'Examination', 'Sports', 'General'];
 
   const tabOptions = categories.map((cat) => ({
     id: cat,
     label: cat,
-    count: cat === 'All' ? announcementsData.length : announcementsData.filter((a) => a.category === cat).length,
+    count: cat === 'All' ? allAnnouncements.length : allAnnouncements.filter((a) => a.category === cat).length,
   }));
 
-  const filtered = announcementsData.filter((item) => {
+  const filtered = allAnnouncements.filter((item) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,11 +57,15 @@ export default function AnnouncementsPage() {
           <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search notice title..." />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((item) => (
-            <AnnouncementCard key={item.id} announcement={item} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-20 text-slate-500 font-medium">Loading announcements...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filtered.map((item) => (
+              <AnnouncementCard key={item.id} announcement={item} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
