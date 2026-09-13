@@ -23,6 +23,10 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
       },
       {
+        protocol: 'https',
+        hostname: '**.onrender.com',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '5000',
